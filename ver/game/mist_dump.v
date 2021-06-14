@@ -56,7 +56,21 @@ module mist_dump(
             `endif
             `ifndef NOMAIN
             //$shm_probe(UUT.u_game,"AS");
-            $shm_probe(UUT.u_game.u_main,"A");
+            //$shm_probe(UUT.u_game.u_main,"A");
+            $shm_probe(UUT.u_game.u_main.A_full);
+            $shm_probe(UUT.u_game.u_main.cpu_dout);
+            $shm_probe(UUT.u_game.u_main.cpu_din);
+            $shm_probe(UUT.u_game.u_main.LDSn);
+            $shm_probe(UUT.u_game.u_main.UDSn);
+            $shm_probe(UUT.u_game.u_main.LDSWn);
+            $shm_probe(UUT.u_game.u_main.UDSWn);
+            $shm_probe(UUT.u_game.u_main.char_cs);
+            $shm_probe(UUT.u_game.u_main.ram_cs);
+            $shm_probe(UUT.u_game.u_main.vram_cs);
+            $shm_probe(UUT.u_game.u_main.pal_cs);
+            $shm_probe(UUT.u_game.u_main.ppi_cs);
+            $shm_probe(UUT.u_game.u_main.objram_cs);
+            $shm_probe(UUT.u_game.u_main.io_cs);
             `endif
             //$shm_probe(UUT.u_game.u_sound,"A");
             //$shm_probe(UUT.u_game.u_main.u_dtack,"A");
