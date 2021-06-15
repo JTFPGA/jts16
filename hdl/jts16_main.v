@@ -245,23 +245,22 @@ end
 reg        irqn; // VBLANK
 wire       inta_n = ~&{ FC[2], FC[1], FC[0], ~ASn }; // interrupt ack.
 reg        last_hstart;
+integer framecnt;
 
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
         irqn <= 1;
+        framecnt <= 0;
     end else begin
         last_hstart <= hstart;
 
-`ifndef NOIRQ
         if( !inta_n ) begin
             irqn <= 1;
         end else if( hstart && !last_hstart && vdump==223 ) begin
-            irqn <= 0;
+            framecnt <= framecnt + 1;
+            // make it twice as slow
+            if( framecnt[0]==0 ) irqn <= 0;
         end
-`else
-        irqn <= 1;
-`endif
-
     end
 end
 
