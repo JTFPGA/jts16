@@ -252,11 +252,16 @@ always @(posedge clk, posedge rst) begin
     end else begin
         last_hstart <= hstart;
 
+`ifndef NOIRQ
         if( !inta_n ) begin
             irqn <= 1;
         end else if( hstart && !last_hstart && vdump==223 ) begin
             irqn <= 0;
         end
+`else
+        irqn <= 1;
+`endif
+
     end
 end
 

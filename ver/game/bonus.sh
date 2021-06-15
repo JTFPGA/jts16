@@ -6,8 +6,8 @@ bonus.py > sim_inputs.hex
 # end of bonus: -d DUMP_START=1560
 ARG="-nosnd  -video 1760 -d SHINOBI_BONUS -w -inputs"
 # J68
-sim.sh -d JTFRAME_J68 $ARG
-mv test.shm new_j68.shm
+#sim.sh -d JTFRAME_J68 $ARG
+#mv test.shm new_j68.shm
 # Fx68k
 sim.sh $ARG
 mv test.shm new_fx68.shm
