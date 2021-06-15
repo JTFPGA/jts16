@@ -15,14 +15,20 @@ function delete_old {
 
 # end of bonus: -d DUMP_START=1560
 ARG="-nosnd -video 100 -w"
-# J68
-sim.sh -d JTFRAME_J68 $ARG
-delete_old slow_j68
-convert slow_j68
-# Fx68k
-echo Fx68k
-sim.sh $ARG
-delete_old slow_fx68
-convert slow_fx68
+
+if [ $1 = J68 ]; then
+    echo J68; sleep 2
+    # J68
+    sim.sh -d JTFRAME_J68 $ARG
+    delete_old slow_j68
+    convert slow_j68
+else
+    echo FX68; sleep 2
+    # Fx68k
+    echo Fx68k
+    sim.sh $ARG
+    delete_old slow_fx68
+    convert slow_fx68
+fi
 
 go run cmpwrites.go
