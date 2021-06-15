@@ -14,6 +14,7 @@ const LDSWn=3-1
 const UDSWn=5-1
 const CPU_DIN=8-1
 const CPU_DOUT=9-1
+const FRAMECNT=16-1
 
 type Sim struct {
     file *os.File;
@@ -135,8 +136,8 @@ func compare( j68, fx68 *Sim ) bool {
     }
 
     if bad != "" {
-        fmt.Printf("%s at times (fx68/j68) %s  /  %s \n",
-            bad, fx68.record[0], j68.record[0])
+        fmt.Printf("%s at frame %s/%s, times (fx68/j68) %s  /  %s \n",
+            bad, fx68.record[FRAMECNT], j68.record[FRAMECNT], fx68.record[0], j68.record[0])
         fmt.Printf("A_full   %s  /  %s\n", fx68.record[A_full], j68.record[A_full])
         fmt.Printf("cpu_dout %s  /  %s\n", fx68.record[CPU_DOUT], j68.record[CPU_DOUT])
         fmt.Printf("DSWn %s%s  /  %s%s\n", fx68.record[UDSWn], fx68.record[LDSWn],
@@ -151,7 +152,7 @@ func compare( j68, fx68 *Sim ) bool {
 }
 
 func main() {
-    basename:="noirq"
+    basename:="new"
     j68  := open_sim(basename+"_j68.csv")
     fx68 := open_sim(basename+"_fx68.csv")
     defer j68.file.Close()
