@@ -55,7 +55,7 @@ s16a_mra shinobi   "Shinobi"                         "Shuriken,Jump,Magic"      
 s16a_mra sjryuko   "Sukeban"                         "None"                                                                 "ff,ff" "Puzzle"        "Sega S16A"
 s16a_mra tetris    "Tetris"                          "Rotate,Rotate,Rotate"                                                 "ff,fd" "Puzzle"        "Sega S16A"
 s16a_mra timescan  "Time Scanner"                    "L. Flipper/Ball Start,R. Flipper/Lane Shift,-"                        "ff,ff" "Pinball"       "Sega S16A"
-s16a_mra wb3       "Wonder Boy 3"                  "Shot,Jump"                                                            "ff,fd" "Platformer"    "Sega S16A"
+s16a_mra wb3       "Wonder Boy 3"                    "Shot,Jump"                                                            "ff,fd" "Platformer"    "Sega S16A"
 
 function s16b_mra {
     NAME=$1
@@ -111,7 +111,7 @@ s16b_mra timescan       "Time Scanner"                         "L. Flipper/Ball 
 s16b_mra toryumon       "Toryumon"                             "Block Turn"                                                 "ff,ff" "Puzzle"       "Sega S16B"
 s16b_mra tturf          "Tough Turf"                           "Punch,Kick,Jump"                                            "ff,ff" "Beat'em Up"   "Sega S16B"
 s16b_mra ultracin       "Waku Waku Ultraman Racing"            "Attack"                                                     "ff,ff" "Racing"       "Sega S16B"
-s16b_mra wb3            "Wonder Boy 3"                       "Shot,Jump"                                                  "ff,fd" "Platformer"   "Sega S16B"
+s16b_mra wb3            "Wonder Boy 3"                         "Shot,Jump"                                                  "ff,fd" "Platformer"   "Sega S16B"
 s16b_mra wrestwar       "Wrestle War"                          "Punch,Kick"                                                 "ff,ff" "Sports"       "Sega S16B"
 #Sega System 16C
 s16b_mra fantzn2x       "Fantasy Zone II The Tears of Opa-Opa" "Shot,Bomb"                                                  "ff,ff" "Shoot'em Up"  "Sega S16C"
