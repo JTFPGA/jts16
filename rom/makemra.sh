@@ -11,7 +11,7 @@ OUTDIR=mra
 mkdir -p $OUTDIR
 mkdir -p $OUTDIR/_alt
 
-AUXTMP=/tmp/$RANDOM$RANDOMD
+AUXTMP=/tmp/$RANDOM$RANDOM
 DEF=$CORES/s16/hdl/jts16.def
 jtcfgstr -target=mist -output=bash -def $DEF|grep _START > $AUXTMP
 source $AUXTMP
@@ -26,12 +26,12 @@ function s16a_mra {
     CATVER="${SUBCATEGORY}"
     ALTFOLDER="_alt/_$FOLDER"
     mkdir -p "$OUTDIR/$ALTFOLDER"
-
+    
     CATVER=`egrep "^${NAME}=" catver.ini | head -1 | cut -d '=' -f 2- | tr -d '\r' | tr -d '\n'`
     if [ -z "${CATVER}" ]; then
         CATVER="${SUBCATEGORY}"
     fi
-
+    
     mame2mra -def $DEF -toml s16a.toml -xml $NAME.xml \
         -outdir $OUTDIR -altdir "$ALTFOLDER" \
         -info platform="$PLATFORM" \
@@ -67,13 +67,13 @@ function s16b_mra {
     CATVER="${SUBCATEGORY}"
     ALTFOLDER="_alt/_$FOLDER"
     mkdir -p "$OUTDIR/$ALTFOLDER"
-
+    
     CATVER=`egrep "^${NAME}=" catver.ini | head -1 | cut -d '=' -f 2- | tr -d '\r' | tr -d '\n'`
     if [ -z "${CATVER}" ]; then
         CATVER="${SUBCATEGORY}"
     fi
-
-    mame2mra -def $CORES/s16b/hdl/jts16b.def -toml s16b.toml -xml name.xml \
+    
+    mame2mra -def $DEF -toml s16b.toml -xml $NAME.xml \
         -outdir $OUTDIR -altdir "$ALTFOLDER" \
         -info platform="$PLATFORM" \
         -info category="$CATEGORY" \
@@ -101,12 +101,12 @@ s16b_mra mvp            "M.V.P"                                "Change,Select,Ch
 s16b_mra passsht        "Passing Shot"                         "Flat,Slice,Lob,Top Spin"                                    "ff,ff" "Sports"       "Sega S16B"
 s16b_mra riotcity       "Riot City"                            "Attack,Jump"                                                "ff,ff" "Beat'em Up"   "Sega S16B"
 s16b_mra ryukyu         "RyuKyu"                               "Cancel,Decide"                                              "ff,ff" "Puzzle"       "Sega S16B"
-s16b_mra sdi            "SDI"                                  "Shot"                                                       "ff,ff" "Shoot'em Up"  "Sega S16B"
+s16a_mra sdi            "SDI"                                  "Shot"                                                       "ff,ff" "Shoot'em Up"  "Sega S16B"
 s16b_mra sonicbom       "Sonic Boom"                           "Shot,Super Shot"                                            "ff,ff" "Shoot'em Up"  "Sega S16B"
-s16b_mra shinobi        "Shinobi"                              "Shuriken,Jump,Magic"                                        "ff,fc" "Hack & Slash" "Sega S16B"
+s16a_mra shinobi        "Shinobi"                              "Shuriken,Jump,Magic"                                        "ff,fc" "Hack & Slash" "Sega S16B"
 s16b_mra sjryuko        "Sukeban"                              "None"                                                       "ff,ff" "Puzzle"       "Sega S16B"
 s16b_mra suprleag       "Super League"                         "Change,Select,Chase"                                        "ff,ff" "Sports"       "Sega S16B"
-s16b_mra tetris         "Tetris"                               "Rotate,Rotate,Rotate"                                       "ff,fd" "Puzzle"       "Sega S16B"
+s16a_mra tetris         "Tetris"                               "Rotate,Rotate,Rotate"                                       "ff,fd" "Puzzle"       "Sega S16B"
 s16b_mra timescan       "Time Scanner"                         "L. Flipper/Ball Start,R. Flipper/Lane Shift,-"              "ff,ff" "Pinball"      "Sega S16B"
 s16b_mra toryumon       "Toryumon"                             "Block Turn"                                                 "ff,ff" "Puzzle"       "Sega S16B"
 s16b_mra tturf          "Tough Turf"                           "Punch,Kick,Jump"                                            "ff,ff" "Beat'em Up"   "Sega S16B"
