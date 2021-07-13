@@ -11,7 +11,7 @@ OUTDIR=mra
 mkdir -p $OUTDIR
 mkdir -p $OUTDIR/_alt
 
-AUXTMP=/tmp/$RANDOM$RANDOM
+AUXTMP=/tmp/$RANDOM$RANDOMD
 DEF=$CORES/s16/hdl/jts16.def
 jtcfgstr -target=mist -output=bash -def $DEF|grep _START > $AUXTMP
 source $AUXTMP
