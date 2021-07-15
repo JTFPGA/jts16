@@ -16,6 +16,10 @@
     Version: 1.0
     Date: 12-3-2021 */
 
+// Hardware reference:
+// s16b.txt line 668
+// sega16sp.cpp line 842
+
 module jts16_obj_scan(
     input              rst,
     input              clk,
@@ -34,7 +38,7 @@ module jts16_obj_scan(
     output reg [ 3:0]  dr_bank,
     output reg [ 1:0]  dr_prio,
     output reg [ 5:0]  dr_pal,
-    output reg [ 9:0]  dr_zoom,
+    output reg [ 4:0]  dr_zoom,
     output reg         dr_hflipb,
 
     // Video signal
@@ -49,13 +53,17 @@ parameter       MODEL=0;  // 0 = S16A, 1 = S16B
 localparam LAST_IDX = MODEL ? 5 : 4;
 localparam STW = MODEL ? 4 : 3;
 localparam ST_SCRATCH = MODEL ? 7 : 6,
-           ST_DRAW    = MODEL ? 8 : 7;
+           ST_ZOOM    = 8, // only S16B
+           ST_DRAW    = MODEL ? 9 : 7;
 
-reg  [6:0] cur_obj;  // current object
-reg  [2:0] idx;
+reg  [6:0]  cur_obj;  // current object
+reg  [2:0]  idx;
 reg  [STW-1:0] st;
-reg  [9:0] zoom;
-reg        first, stop;
+reg  [14:0] zoom;
+reg         offset_sel, stop, zoom_sel;
+wire [ 5:0] next_vzoom;
+wire [14:0] next_zoom;
+wire        vzov;
 
 // Object data
 //reg        [7:0] bottom, top;
@@ -66,12 +74,16 @@ reg        [ 3:0] bank;
 reg        [ 1:0] prio;
 reg        [ 5:0] pal;
 reg               hflipb; // H flip bit for S16B
+reg               drnext;
 wire       [15:0] next_offset;
 wire       [ 8:0] vrf = flip ? 9'd223-vrender : vrender;
 
 assign tbl_addr    = { cur_obj, idx };
-assign next_offset = (first ? offset : tbl_dout) + pitch;
-assign tbl_din     = offset;
+assign next_offset = (offset_sel ? offset : tbl_dout) + pitch;
+assign next_vzoom  = { 1'b0, zoom[9:5] } + { 1'b0, zoom[14:10] };
+assign next_zoom   = {1'b0, next_vzoom[4:0], zoom[9:0] };
+assign vzov        = next_vzoom[5];
+assign tbl_din     = (MODEL && zoom_sel) ? next_zoom : offset;
 
 wire [7:0] top    = tbl_dout[ 7:0],
            bottom = tbl_dout[15:8];
@@ -103,6 +115,7 @@ always @(posedge clk, posedge rst) begin
         end
         stop      <= 0;
         dr_start  <= 0;
+        tbl_we    <= 0;
         case( st )
             0: begin
                 cur_obj  <= 0;
@@ -124,7 +137,7 @@ always @(posedge clk, posedge rst) begin
                         st      <= 1;
                         stop    <= 1;
                     end else begin // draw this one
-                        first <= top == vrf[7:0]; // first line
+                        offset_sel <= top == vrf[7:0]; // first line
                     end
                 end
             end
@@ -137,6 +150,7 @@ always @(posedge clk, posedge rst) begin
                 offset  <= tbl_dout; // flip/offset
             end
             5: begin
+                drnext <= 0;
                 if (MODEL) begin
                     pal  <= tbl_dout[5:0];
                     bank <= tbl_dout[11:8];
@@ -147,26 +161,41 @@ always @(posedge clk, posedge rst) begin
                     prio <= tbl_dout[1:0];
                 end
             end
-            `ifdef S16B
+        `ifdef S16B
             6: begin
-                zoom <= tbl_dout[9:0];
+                zoom <= tbl_dout[14:0];
             end
-            `endif
-            ST_SCRATCH: begin
-                offset <= next_offset;
-                tbl_we <= 1;
+        `endif
+            ST_SCRATCH: begin // state 6 for S16A / 7 for S16B
+                offset   <= next_offset;
+                idx      <= 7;
+                tbl_we   <= 1;
+                zoom_sel <= 0;
+                if( drnext ) st <= ST_DRAW;
             end
-            ST_DRAW: begin
-                tbl_we  <= 0;
+        `ifdef S16B
+            ST_ZOOM: begin // state 8
+                idx      <= 5;
+                tbl_we   <= 1;
+                zoom_sel <= 1;
+                if( vzov ) begin
+                    zoom <= next_zoom;
+                    offset_sel <= 1;
+                    drnext <= 1;
+                    st   <= ST_SCRATCH; // move to next line
+                end
+            end
+        `endif
+            ST_DRAW: begin // state 7 for S16A / 9 for S16B
                 if( !dr_busy ) begin
                     dr_xpos   <= xpos; //+PXL_DLY;
                     dr_offset <= offset;
                     dr_pal    <= pal;
                     dr_prio   <= prio;
                     dr_bank   <= bank;
-                    dr_start  <= 1;
+                    dr_start  <= MODEL==0 || !vzov;
                     dr_hflipb <= hflipb;
-                    dr_zoom   <= zoom;
+                    dr_zoom   <= zoom[4:0]; // horizontal zoom
                     // next
                     if( &cur_obj )
                         st <= 0; // Done
