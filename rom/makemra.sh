@@ -32,7 +32,14 @@ function s16a_mra {
         CATVER="${SUBCATEGORY}"
     fi
 
-    mame2mra -def $DEF -toml s16a.toml -xml $NAME.xml \
+    if [ ! -e xml/$NAME.xml ]; then
+        if [ ! -f $NAME.xml ]; then
+            mamefilter $NAME
+        fi
+        mv $NAME.xml xml/
+    fi
+
+    mame2mra -def $DEF -toml s16a.toml -xml xml/$NAME.xml \
         -outdir $OUTDIR -altdir "$ALTFOLDER" \
         -info platform="$PLATFORM" \
         -info category="$CATEGORY" \
@@ -59,11 +66,11 @@ s16a_mra wb3       "Wonder Boy 3"                    "Shot,Jump"                
 
 function s16b_mra {
     NAME=$1
-    FOLDER=$2
-    BUTTONS="$3"
-    DIPS="$4"
-    CATEGORY="$5"
-    PLATFORM="$6"
+    FOLDER=$1
+    BUTTONS="$2"
+    DIPS="$3"
+    CATEGORY="$4"
+    PLATFORM="$5"
     CATVER="${SUBCATEGORY}"
     ALTFOLDER="_alt/_$FOLDER"
     mkdir -p "$OUTDIR/$ALTFOLDER"
@@ -73,11 +80,14 @@ function s16b_mra {
         CATVER="${SUBCATEGORY}"
     fi
 
-    if [ ! -e $NAME.xml ]; then
-        mamefilter $NAME
+    if [ ! -e xml/$NAME.xml ]; then
+        if [ ! -f $NAME.xml ]; then
+            mamefilter $NAME
+        fi
+        mv $NAME.xml xml/
     fi
 
-    mame2mra -def $CORES/s16b/hdl/jts16b.def -toml s16b.toml -xml $NAME.xml \
+    mame2mra -def $CORES/s16b/hdl/jts16b.def -toml s16b.toml -xml xml/$NAME.xml \
         -outdir $OUTDIR -altdir "$ALTFOLDER" \
         -info platform="$PLATFORM" \
         -info category="$CATEGORY" \
@@ -127,4 +137,3 @@ s16b_mra dfjail         "The Destroyer From Jail"              "Assault Rifle,Ju
 
 # echo "Enter MiSTer's root password"
 # scp -r mra/* root@MiSTer.home:/media/fat/_S16
-
