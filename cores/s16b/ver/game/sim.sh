@@ -57,8 +57,11 @@ if [ ! -z "$SCENE" ]; then
     if [[ ! "$*" =~ -time ]]; then
         OTHER="$OTHER -time 16"
     fi
+    # VRAM snap goes to 20'0000h (bytes) = 10'0000h (words)
     SDRAM_SNAP="-snap scr.bin 0 0x200000"
 else
+    export YM2151=1
+    export Z80=1
     rm -f char_*.bin pal_*.bin obj_*.bin scr.bin
 fi
 
@@ -74,6 +77,7 @@ jtsim_sdram $HEXDUMP -header 32 \
     -stop $MCU_START \
     -dumpbin fd1094.bin $MAINKEY_START 0x2000 \
     $SDRAM_SNAP || exit $?
+
 
 jtsim -mist -sysname $SYSNAME $SIMULATOR \
 	-videow 320 -videoh 224 -d JTFRAME_DWNLD_PROM_ONLY \

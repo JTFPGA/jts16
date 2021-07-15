@@ -16,9 +16,9 @@ s16a/jts16_fd1094.v
 s16a/jts16_fd1094_ctrl.v
 s16a/jts16_fd1094_dec.v
 
-../../hdl/jts16b_main.v
+#../../hdl/jts16b_main.v
+#../../hdl/jts16b_mapper.v
 ../../hdl/jts16b_snd.v
-../../hdl/jts16b_mapper.v
 
 
 $JTFRAME/hdl/jtframe_sh.v
@@ -33,8 +33,9 @@ $JTFRAME/hdl/ram/jtframe_dual_ram.v
 $JTFRAME/hdl/ram/jtframe_dual_ram16.v
 $JTFRAME/hdl/ram/jtframe_obj_buffer.v
 $JTFRAME/hdl/sound/jtframe_mixer.v
+$JTFRAME/hdl/sound/jtframe_pole.v
 $JTFRAME/hdl/sdram/jtframe_dwnld.v
 -F $JTFRAME/hdl/sdram/jtframe_sdram64.f
 
 # 68000
--F $JTFRAME/hdl/cpu/jtframe_m68k.f
+#-F $JTFRAME/hdl/cpu/jtframe_m68k.f

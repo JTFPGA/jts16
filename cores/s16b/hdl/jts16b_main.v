@@ -33,7 +33,7 @@ module jts16b_main(
     input       [15:0] pal_dout,
     input       [15:0] obj_dout,
     output reg         flip,
-    output             video_en,
+    output reg         video_en,
     output             colscr_en,
     output             rowscr_en,
     // RAM access
@@ -87,7 +87,7 @@ module jts16b_main(
     output             sndmap_obf, // pbf signal == buffer full ?
 
     // NVRAM - debug
-    input       [15:0] ioctl_addr,
+    input       [16:0] ioctl_addr,
     output      [ 7:0] ioctl_din
 );
 
@@ -143,11 +143,13 @@ jts16b_mapper u_mapper(
     .vint       ( vint           ),
 
     .addr       ( A              ),
+    .addr_out   (                ),
     .cpu_dout   ( cpu_dout       ),
     .cpu_dswn   ( {UDSWn, LDSWn} ),
 
     // Bus sharing
     .bus_dout   ( 16'hffff       ),
+    .bus_din    (                ),
 
     // M68000 control
     .cpu_berrn  ( BERRn          ),
@@ -159,6 +161,8 @@ jts16b_mapper u_mapper(
     .cpu_fc     ( FC             ),
     .cpu_ipln   ( cpu_ipln       ),
     .cpu_vpan   ( cpu_vpan       ),
+    .cpu_haltn  (                ),
+    .cpu_rstn   (                ),
 
     // Sound CPU
     .sndmap_rd  ( sndmap_rd      ),
@@ -267,8 +271,6 @@ function [7:0] sort_joy( input [7:0] joy_in );
     sort_joy = { joy_in[1:0], joy_in[3:2], joy_in[7], joy_in[5:4], joy_in[6] };
 endfunction
 
-assign video_en = 1;
-
 always @(*) begin
     sort1 = sort_joy( joystick1 );
     sort2 = sort_joy( joystick2 );
@@ -278,13 +280,14 @@ always @(posedge clk, posedge rst) begin
     if( rst ) begin
         cab_dout  <= 8'hff;
         flip      <= 0;
+        video_en  <= 1;
     end else  begin
         last_iocs <= io_cs;
         cab_dout <= 8'hff;
         if(io_cs) case( A[13:12] )
             0: if( !LDSWn ) begin
-                flip    <= cpu_dout[6];
-                //video_en <= cpu_dout[5];
+                flip     <= cpu_dout[6];
+                video_en <= cpu_dout[5];
             end
             1:
                 case( A[2:1] )
@@ -396,14 +399,14 @@ jtframe_m68k u_cpu(
 `ifdef MISTER
 `ifndef JTFRAME_RELEASE
 `ifndef BETA
-jts16_shadow u_shadow(
+jts16_shadow #(.VRAMW(15)) u_shadow(
     .clk        ( clk       ),
     .clk_rom    ( clk_rom   ),
 
     // Capture SDRAM bank 0 inputs
-    .addr       ( A[14:1]   ),
+    .addr       ( A[15:1]   ),
     .char_cs    ( char_cs   ),    //  4k
-    .vram_cs    ( vram_cs   ),    // 32k
+    .vram_cs    ( vram_cs   ),    // 64k
     .pal_cs     ( pal_cs    ),    //  4k
     .objram_cs  ( objram_cs ),    //  2k
     .din        ( cpu_dout  ),

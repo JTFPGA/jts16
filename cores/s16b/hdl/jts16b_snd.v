@@ -92,22 +92,15 @@ always @(*) begin
             4'b001?: rom_addr[17:16] = 1; // A9
             4'b0001: rom_addr[17:16] = 0; // A8
         endcase
+        rom_addr = rom_addr + 19'h10000;
     end
 end
 
-// PCM volume
-always @(posedge clk ) begin
-    case( fxlevel )
-        2'd0: pcmgain <= 8'h04;
-        2'd1: pcmgain <= 8'h06;
-        2'd2: pcmgain <= 8'h08;
-        2'd3: pcmgain <= 8'h0C;
-    endcase
-    if( !enable_psg ) pcmgain <= 0;
-end
-
 always @(*) begin
+    ram_cs  = !mreq_n && &A[15:11];
     bank_cs = !mreq_n && (A[15:12]>=8 && A[15:12]<4'he);
+    rom_cs  = (!mreq_n && !A[15]) || bank_cs;
+
     // Port Map
     { fm_cs, misc_cs, pcm_cs, mapper_cs } = 0;
     if( !iorq_n ) begin
@@ -123,14 +116,11 @@ always @(*) begin
 end
 
 always @(posedge clk) begin
-    ram_cs   <=  !mreq_n && &A[15:11];
-    rom_cs   <=  (!mreq_n && !A[15]) || bank_cs;
     rom_ok2  <= rom_ok;
-
     cpu_din  <= rom_cs    ? rom_data : (
                 ram_cs    ? ram_dout : (
                 fm_cs     ? fm_dout  : (
-                pcm_cs    ? { pcm_busyn, 7'd0 } : (
+                pcm_cs    ? { pcm_busyn, ~7'd0 } : (
                 mapper_cs ? mapper_dout : (
                     8'hff )))));
 end
@@ -138,11 +128,24 @@ end
 always @(posedge clk, posedge rst) begin
     if( rst ) begin
         rom_msb <= 0;
-    end else if(misc_cs) begin
+        pcm_mdn <= 1;
+        pcm_rst <= 1;
+    end else if(misc_cs & ~wr_n) begin
         rom_msb <= cpu_dout[5:0];
         pcm_rst <= ~cpu_dout[6];
-        pcm_mdn <= cpu_dout[7];
+        pcm_mdn <= ~cpu_dout[7];
     end
+end
+
+// PCM volume
+always @(posedge clk ) begin
+    case( fxlevel )
+        2'd0: pcmgain <= 8'h04;
+        2'd1: pcmgain <= 8'h06;
+        2'd2: pcmgain <= 8'h08;
+        2'd3: pcmgain <= 8'h0C;
+    endcase
+    if( !enable_psg ) pcmgain <= 0;
 end
 
 jtframe_mixer #(.W2(9)) u_mixer(
