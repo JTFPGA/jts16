@@ -101,7 +101,7 @@ s16b_mra aliensyn       "Alien Syndrome"                       "Shot"           
 s16b_mra altbeast       "Altered Beast"                        "Punch,Kick,Jump"                                            "ff,ff" "Platformer"   "Sega S16B"
 s16b_mra aurail         "Aurail"                               "Rapid Shot,Kite/Turn,Shield"                                "ff,ff" "Shoot'em Up"  "Sega S16B"
 s16b_mra bayroute       "Bay Route"                            "Shot,Jump,Select"                                           "ff,ff" "Run & Gun"    "Sega S16B"
-s16b_mra bullet         "Bullet"                               "Shot (Left),Shot (Right),Shot (Forward),Shot (Behind)"      "ff,ff" "Run & Gun"    "Sega S16B"
+s16b_mra bullet         "Bullet"                               "Shot (Up),Shot (Right),Shot (Behind),Shot (Left)"      "ff,ff" "Run & Gun"    "Sega S16B"
 #Sega System 16B - Charon
 s16b_mra cotton         "Cotton"                               "Shoot/Magic,Bomb/Nymphs"                                    "ff,ff" "Shoot'em Up"  "Sega S16B"
 s16b_mra ddux           "Dynamite Dux"                         "Shot,Jump"                                                  "ff,ff" "Platformer"   "Sega S16B"
