@@ -66,11 +66,11 @@ s16a_mra wb3       "Wonder Boy 3"                    "Shot,Jump"                
 
 function s16b_mra {
     NAME=$1
-    FOLDER=$1
-    BUTTONS="$2"
-    DIPS="$3"
-    CATEGORY="$4"
-    PLATFORM="$5"
+    FOLDER=$2
+    BUTTONS="$3"
+    DIPS="$4"
+    CATEGORY="$5"
+    PLATFORM="$6"
     CATVER="${SUBCATEGORY}"
     ALTFOLDER="_alt/_$FOLDER"
     mkdir -p "$OUTDIR/$ALTFOLDER"
