@@ -44,7 +44,11 @@ module jts16_colmix(
     output     [ 4:0]  green,
     output     [ 4:0]  blue,
     output             LVBL_dly,
-    output             LHBL_dly
+    output             LHBL_dly,
+    // Dump
+    input      [10:0]  dump_addr,
+    input              dump_en,
+    output     [15:0]  dump_dout
 );
 
 wire [ 1:0] we;
@@ -141,11 +145,13 @@ jtframe_dual_ram16 #(
     .q0     ( cpu_din   ),
 
     // Video reads
-    .addr1  ( pal_addr  ),
+    .addr1  ( dump_en ? dump_addr : pal_addr  ),
     .data1  (           ),
     .we1    ( 2'b0      ),
     .q1     ( pal       )
 );
+
+assign dump_dout = pal;
 
 function [4:0] dim;
     input [4:0] a;

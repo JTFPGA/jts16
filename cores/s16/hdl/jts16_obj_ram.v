@@ -31,7 +31,11 @@ module jts16_obj_ram(
     input      [10:1]  tbl_addr,
     output     [15:0]  tbl_dout,
     input              tbl_we,
-    input      [15:0]  tbl_din
+    input      [15:0]  tbl_din,
+    // Dump
+    input      [10:0]  dump_addr,
+    input              dump_en,
+    output     [15:0]  dump_dout
 );
 
 wire [ 1:0] cpu_we = ~dsn & {2{obj_cs}};
@@ -51,10 +55,12 @@ jtframe_dual_ram16 #(
     .q0     ( cpu_din   ),
 
     // Video reads
-    .addr1  ( tbl_addr  ),
+    .addr1  ( dump_en ? dump_addr[9:0] : tbl_addr  ),
     .data1  ( tbl_din   ),
     .we1    ({2{tbl_we}}),
     .q1     ( tbl_dout  )
 );
+
+assign dump_dout = tbl_dout;
 
 endmodule

@@ -101,9 +101,11 @@ module `GAMETOP(
 
 `ifndef S16B
     localparam SNDW=15;
+    localparam MODEL=1;
     wire [7:0] sndmap_dout=0;
 `else
     localparam SNDW=19;
+    localparam MODEL=0;
 
     wire [7:0] sndmap_din, sndmap_dout;
     wire       sndmap_rd, sndmap_wr, sndmap_obf;
@@ -144,7 +146,7 @@ wire [19:0] obj_addr;
 wire [15:0] obj_data;
 
 // CPU interface
-wire [12:1] cpu_addr;
+wire [15:1] cpu_addr;
 wire [15:0] main_dout, char_dout, pal_dout, obj_dout;
 wire [ 1:0] dsn;
 wire        UDSWn, LDSWn, main_rnw;
@@ -276,10 +278,7 @@ jts16_cen u_cen(
     .dip_pause   ( dip_pause  ),
     .dip_test    ( dip_test   ),
     .dipsw_a     ( dipsw_a    ),
-    .dipsw_b     ( dipsw_b    ),
-    // NVRAM dump
-    .ioctl_din   ( ioctl_din  ),
-    .ioctl_addr  ( ioctl_addr[16:0] )
+    .dipsw_b     ( dipsw_b    )
 );
 `else
     assign flip      = 0;
@@ -403,6 +402,9 @@ always @(posedge clk) begin
     endcase
 end
 
+wire [15:0] dump_dout;
+wire        dump_pal, dump_obj;
+
 jts16_video u_video(
     .rst        ( rst       ),
     .clk        ( clk       ),
@@ -413,7 +415,7 @@ jts16_video u_video(
     .video_en   ( video_en  ),
     .game_id    ( game_id   ),
     // CPU interface
-    .cpu_addr   ( cpu_addr  ),
+    .cpu_addr   (cpu_addr[12:1]),
     .char_cs    ( char_cs   ),
     .pal_cs     ( pal_cs    ),
     .objram_cs  ( objram_cs ),
@@ -473,8 +475,42 @@ jts16_video u_video(
     // debug
     .debug_bus  ( debug_bus ),
     .st_addr    ( st_addr   ),
-    .st_dout    ( st_video  )
+    .st_dout    ( st_video  ),
+    // Memory dump
+    .dump_pal   ( dump_pal  ),
+    .dump_obj   ( dump_obj  ),
+    .dump_addr  ( ioctl_addr>>1 ),
+    .dump_dout  ( dump_dout )
 );
+
+// Debug
+`ifdef MISTER
+`ifndef NOSHADOW
+jts16_shadow #(.VRAMW(MODEL ? 15 : 14)) u_shadow(
+    .clk        ( clk       ),
+    .clk_rom    ( clk_rom   ),
+
+    // Capture SDRAM bank 0 inputs
+    .addr       ( cpu_addr  ),
+    .char_cs    ( char_cs   ),    //  4k
+    .vram_cs    ( vram_cs   ),    // 64k
+    .pal_cs     ( pal_cs    ),    //  4k
+    .objram_cs  ( objram_cs ),    //  2k
+    .din        ( cpu_dout  ),
+    .dswn       ( {UDSWn, LDSWn} ),  // write mask -active low
+
+    .dump_pal   ( dump_pal  ),
+    .dump_obj   ( dump_obj  ),
+    .dump_dout  ( dump_dout ),
+
+    .tile_bank  ( tile_bank ),
+    // Let data be dumped via NVRAM interface
+    .ioctl_addr ( ioctl_addr),
+    .ioctl_din  ( ioctl_din ),
+    .ioctl_ram  ( ioctl_ram )
+);
+`endif
+`endif
 
 jts16_sdram #(.SNDW(SNDW)) u_sdram(
     .rst        ( rst       ),

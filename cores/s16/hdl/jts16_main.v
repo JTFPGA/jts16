@@ -46,7 +46,7 @@ module jts16_main(
     output             UDSWn,
     output             LDSWn,
     output             RnW,
-    output      [12:1] cpu_addr,
+    output      [15:1] cpu_addr,
     // Sound control
     output      [ 7:0] snd_latch,
     output             snd_irqn,
@@ -82,11 +82,7 @@ module jts16_main(
     input              dip_pause,
     input              dip_test,
     input    [7:0]     dipsw_a,
-    input    [7:0]     dipsw_b,
-
-    // NVRAM - debug
-    input       [15:0] ioctl_addr,
-    output      [ 7:0] ioctl_din
+    input    [7:0]     dipsw_b
 );
 
 localparam [7:0] GAME_SDI=1, GAME_PASSSHT=2;
@@ -114,7 +110,7 @@ assign BUSn  = ASn | (LDSn & UDSn);
 // No peripheral bus access for now
 assign BRn   = 1;
 assign BGACKn= 1;
-assign cpu_addr = A[12:1];
+assign cpu_addr = A[15:1];
 assign rom_addr = {1'b0, A[17:1]}; // only 256kB on System 16A
 assign BERRn = !(!ASn && BGACKn && !rom_cs && !char_cs && !objram_cs  && !pal_cs
                               && !io_cs  && !wdog_cs && pre_vram_cs && pre_ram_cs);
@@ -419,30 +415,5 @@ jtframe_m68k u_cpu(
     .DTACKn     ( DTACKn      ),
     .IPLn       ( { irqn, 2'b11 } ) // VBLANK
 );
-
-// Debug
-`ifdef MISTER
-`ifndef JTFRAME_RELEASE
-`ifndef BETA
-jts16_shadow u_shadow(
-    .clk        ( clk       ),
-    .clk_rom    ( clk_rom   ),
-
-    // Capture SDRAM bank 0 inputs
-    .addr       ( A[14:1]   ),
-    .char_cs    ( char_cs   ),    //  4k
-    .vram_cs    ( vram_cs   ),    // 32k
-    .pal_cs     ( pal_cs    ),     //  4k
-    .objram_cs  ( objram_cs ),  //  2k
-    .din        ( cpu_dout  ),
-    .dswn       ( {UDSWn, LDSWn} ),  // write mask -active low
-
-    // Let data be dumped via NVRAM interface
-    .ioctl_addr ( ioctl_addr),
-    .ioctl_din  ( ioctl_din )
-);
-`endif
-`endif
-`endif
 
 endmodule

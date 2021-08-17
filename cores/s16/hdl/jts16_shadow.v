@@ -21,7 +21,7 @@ module jts16_shadow #(parameter VRAMW=14) (
     input             clk_rom,
 
     // Capture SDRAM bank 0 inputs
-    input      [14:1] addr,
+    input      [15:1] addr,
     input             char_cs,    //  4k
     input             vram_cs,    // 32k
     input             pal_cs,     //  4k
@@ -30,8 +30,12 @@ module jts16_shadow #(parameter VRAMW=14) (
     input      [ 1:0] dswn,  // write mask -active low
 
     input      [ 5:0] tile_bank,
+    output reg        dump_pal,
+    output reg        dump_obj,
+    input      [15:0] dump_dout,
 
     // Let data be dumped via NVRAM interface
+    input             ioctl_ram,
     input      [16:0] ioctl_addr,
     output     [ 7:0] ioctl_din
 );
@@ -40,23 +44,32 @@ module jts16_shadow #(parameter VRAMW=14) (
     assign ioctl_din = 0;
 `else
 
-wire [15:0] vram_dout, char_dout, pal_dout, objram_dout;
+wire [15:0] vram_dout, char_dout;
 reg  [15:0] dout, dout_latch;
+wire [ 7:0] dump_byte;
 
 wire [ 1:0] vram_we   = vram_cs   ? ~dswn : 2'b0;
 wire [ 1:0] char_we   = char_cs   ? ~dswn : 2'b0;
 wire [ 1:0] pal_we    = pal_cs    ? ~dswn : 2'b0;
 wire [ 1:0] objram_we = objram_cs ? ~dswn : 2'b0;
-
 assign ioctl_din = ~ioctl_addr[0] ? dout_latch[15:8] : dout_latch[7:0];
+assign dump_byte = ioctl_addr[1] ? dump_dout[7:0] : dump_dout[15:0];
 
 always @(*) begin
+    dump_pal = 0;
+    dump_obj = 0;
     if( VRAMW==14 ) begin
         casez( ioctl_addr[15:11] )
             5'b0???_?: dout = vram_dout;
-            5'b1000_?: dout = char_dout;
-            5'b1001_?: dout = pal_dout;
-            5'b1010_0: dout = objram_dout;
+            5'b1000_?: begin
+                dump_obj = 1;
+                dout = char_dout;
+            end
+            5'b1001_?: begin
+                dump_pal = 1;
+                dout = dump_byte;
+            end
+            5'b1010_0: dout = dump_byte;
             default:   dout = 16'hffff;
         endcase
     end else begin
@@ -64,12 +77,21 @@ always @(*) begin
         if( ioctl_addr[16] ) begin
             casez( ioctl_addr[15:12] )
                 4'b0000: dout = char_dout;    // 4kB
-                4'b0001: dout = pal_dout;     // 4kB
-                4'b0010:
-                    dout = ioctl_addr[11] ? {2'd0, tile_bank} : objram_dout;  // 2kB
+                4'b0001: begin
+                    dump_pal = 1;
+                    dout = dump_byte;     // 4kB
+                end
+                4'b0010: begin
+                    dump_obj = ~ioctl_addr[11];
+                    dout = ioctl_addr[11] ? {2'd0, tile_bank} : dump_byte;  // 2kB
+                end
                 default: dout = 16'hffff;
             endcase
         end
+    end
+    if(!ioctl_ram) begin
+        dump_pal = 0;
+        dump_obj = 0;
     end
 end
 
@@ -108,35 +130,6 @@ jtframe_dual_ram16 #(.aw(11)) u_char(
     .q1         ( char_dout )
 );
 
-jtframe_dual_ram16 #(.aw(11)) u_pal(
-    .clk0       ( clk       ),
-    .clk1       ( clk_rom   ),
-    // CPU writes
-    .data0      ( din       ),
-    .addr0      ( addr[11:1]),
-    .we0        ( pal_we    ),
-    .q0         (           ),
-    // hps_io reads
-    .data1      (           ),
-    .addr1      ( ioctl_addr[11:1] ),
-    .we1        ( 2'b0      ),
-    .q1         ( pal_dout )
-);
-
-jtframe_dual_ram16 #(.aw(10)) u_objram(
-    .clk0       ( clk       ),
-    .clk1       ( clk_rom   ),
-    // CPU writes
-    .data0      ( din       ),
-    .addr0      ( addr[10:1]),
-    .we0        ( objram_we ),
-    .q0         (           ),
-    // hps_io reads
-    .data1      (           ),
-    .addr1      ( ioctl_addr[10:1] ),
-    .we1        ( 2'b0      ),
-    .q1         ( objram_dout )
-);
 
 `endif
 endmodule

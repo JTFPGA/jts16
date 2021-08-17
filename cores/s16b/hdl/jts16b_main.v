@@ -52,7 +52,7 @@ module jts16b_main(
     output             UDSWn,
     output             LDSWn,
     output             RnW,
-    output      [12:1] cpu_addr,
+    output      [15:1] cpu_addr,
 
     // cabinet I/O
     input       [ 7:0] joystick1,
@@ -95,11 +95,7 @@ module jts16b_main(
     input              sndmap_wr,
     input    [7:0]     sndmap_din,
     output   [7:0]     sndmap_dout,
-    output             sndmap_obf, // pbf signal == buffer full ?
-
-    // NVRAM - debug
-    input       [16:0] ioctl_addr,
-    output      [ 7:0] ioctl_din
+    output             sndmap_obf  // pbf signal == buffer full ?
 );
 
 localparam [7:0] GAME_SDI=1,
@@ -143,7 +139,7 @@ assign LDSWn = RnW | LDSn;
 assign BUSn  = ASn | (LDSn & UDSn);
 
 // No peripheral bus access for now
-assign cpu_addr = A[12:1];
+assign cpu_addr = A[15:1];
 // assign BERRn = !(!ASn && BGACKn && !rom_cs && !char_cs && !objram_cs  && !pal_cs
 //                               && !io_cs  && !wdog_cs && vram_cs && ram_cs);
 
@@ -536,29 +532,5 @@ jtframe_m68k u_cpu(
     .DTACKn     ( DTACKn      ),
     .IPLn       ( cpu_ipln    ) // VBLANK
 );
-
-// Debug
-`ifdef MISTER
-`ifndef NOSHADOW
-jts16_shadow #(.VRAMW(15)) u_shadow(
-    .clk        ( clk       ),
-    .clk_rom    ( clk_rom   ),
-
-    // Capture SDRAM bank 0 inputs
-    .addr       ( A[15:1]   ),
-    .char_cs    ( char_cs   ),    //  4k
-    .vram_cs    ( vram_cs   ),    // 64k
-    .pal_cs     ( pal_cs    ),    //  4k
-    .objram_cs  ( objram_cs ),    //  2k
-    .din        ( cpu_dout  ),
-    .dswn       ( {UDSWn, LDSWn} ),  // write mask -active low
-
-    .tile_bank  ( tile_bank ),
-    // Let data be dumped via NVRAM interface
-    .ioctl_addr ( ioctl_addr),
-    .ioctl_din  ( ioctl_din )
-);
-`endif
-`endif
 
 endmodule

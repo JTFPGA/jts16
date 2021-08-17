@@ -42,7 +42,11 @@ module jts16_obj(
     input      [ 8:0]  vrender,
     input      [ 8:0]  hdump,
     output     [11:0]  pxl,
-    input      [ 7:0]  debug_bus
+    input      [ 7:0]  debug_bus,
+    // Dump
+    input      [10:0]  dump_addr,
+    input              dump_en,
+    output     [15:0]  dump_dout
 );
 
 /* verilator lint_off WIDTH */
@@ -84,7 +88,11 @@ jts16_obj_ram u_ram(
     .tbl_addr  ( tbl_addr       ),
     .tbl_dout  ( tbl_dout       ),
     .tbl_we    ( tbl_we         ),
-    .tbl_din   ( tbl_din        )
+    .tbl_din   ( tbl_din        ),
+    // Dump
+    .dump_en   ( dump_en        ),
+    .dump_addr ( dump_addr      ),
+    .dump_dout ( dump_dout      )
 );
 
 jts16_obj_scan #(.PXL_DLY(0),.MODEL(MODEL)) u_scan(

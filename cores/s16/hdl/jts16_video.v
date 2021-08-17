@@ -90,7 +90,12 @@ module jts16_video(
     input      [ 7:0]  debug_bus,
     // status dump
     input      [ 7:0]  st_addr,
-    output     [ 7:0]  st_dout
+    output     [ 7:0]  st_dout,
+    // Memory dump
+    input              dump_pal,
+    input              dump_obj,
+    input      [10:0]  dump_addr,
+    output     [15:0]  dump_dout
 );
 
 localparam MODEL = `ifdef S16B 1; `else 0; `endif
@@ -134,7 +139,10 @@ wire [15:0] scr1_pages,      scr2_pages,
 
 parameter [8:0] HB_END = 9'h0bf;
 
+wire [15:0] dump_pal_dout, dump_obj_dout;
+
 assign vint = vdump==223;
+assign dump_dout = dump_pal ? dump_pal_dout : dump_obj_dout;
 
 `ifndef S16B
     assign rowscr1_en = rowscr_en;
@@ -345,7 +353,11 @@ jts16_obj #(.PXL_DLY(OBJ_DLY),.MODEL(MODEL)) u_obj(
     .vrender   ( vrender        ),
     .hdump     ( hdump          ),
     .pxl       ( obj_pxl        ),
-    .debug_bus ( debug_bus      )
+    .debug_bus ( debug_bus      ),
+    // Dump
+    .dump_en   ( dump_obj       ),
+    .dump_addr ( dump_addr      ),
+    .dump_dout ( dump_obj_dout  )
 );
 
 jts16_colmix u_colmix(
@@ -377,7 +389,11 @@ jts16_colmix u_colmix(
     .green     ( green          ),
     .blue      ( blue           ),
     .LVBL_dly  ( LVBL_dly       ),
-    .LHBL_dly  ( LHBL_dly       )
+    .LHBL_dly  ( LHBL_dly       ),
+    // Dump
+    .dump_en   ( dump_pal       ),
+    .dump_addr ( dump_addr      ),
+    .dump_dout ( dump_pal_dout  )
 );
 
 endmodule
